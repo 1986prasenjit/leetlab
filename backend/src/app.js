@@ -4,6 +4,9 @@ import cors from 'cors';
 
 import cookieParser from 'cookie-parser';
 
+//!user route
+import userRoutes from "./routes/user.route.js"
+
 const app = express();
 
 app.use(express.json())
@@ -22,6 +25,11 @@ app.use(
         allowedHeaders:["Content-Type", "Authorization"]
     })
 )
+
+//!user route
+app.use("/api/v1/user", userRoutes)
+
+
 
 export default app;
 
