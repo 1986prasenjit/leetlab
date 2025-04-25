@@ -72,10 +72,67 @@ const registerUser = asyncHandler(async (req, res) => {
 
     res.status(201)
         .json(
-            new ApiResponse(200, newUser, "User Registered Successfully")
+            new ApiResponse(200,
+               newUser,
+                "User Registered Successfully")
         )
 
 })
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+    //get the data from req.body
+    const { email, password } = req.body;
+
+    //verify the data 
+    if (
+        [email, password].some((field) => field.trim() === "")
+    ) {
+        throw new ApiError(400, "All fields are required to proceed")
+    }
+
+    //Check the user present in the db
+    const user = await db.user.findUnique({
+        where: {
+            email
+        }
+    })
+
+    if (!user) {
+        throw new ApiError(401, "User credentials doesnot exits")
+    }
+
+    //match the password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+        throw new ApiError(400, "Invalid User credentials")
+    }
+
+    const token = jwt.sign(
+        {
+            id: user.id,
+        },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: process.env.JWT_EXPIRY
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+    }
+
+    res.cookie("jwt", token, options);
+
+    res.status(200)
+        .json(
+            new ApiResponse(200,
+                user,
+                "User LoggedIn Successfully")
+        )
+})
+
+export { registerUser, loginUser };
 
