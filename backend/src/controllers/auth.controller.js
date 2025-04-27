@@ -73,7 +73,8 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(201)
         .json(
             new ApiResponse(200,
-               newUser,
+                newUser,
+                true,
                 "User Registered Successfully")
         )
 
@@ -130,9 +131,29 @@ const loginUser = asyncHandler(async (req, res) => {
         .json(
             new ApiResponse(200,
                 user,
+                true,
                 "User LoggedIn Successfully")
         )
 })
 
-export { registerUser, loginUser };
+const logoutUser = asyncHandler(async (req, res) => {
+    try {
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+
+        return res
+            .status(200)
+            .clearCookie("jwt", options)
+            .json(
+                new ApiResponse(200,"User Logged Out Successfully",{})
+            )
+    } catch (error) {
+        throw new ApiError(401,false, error?.message || "Invalid User Credentials")
+    }
+})
+
+
+export { registerUser, loginUser, logoutUser };
 
